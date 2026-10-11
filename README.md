@@ -13,6 +13,48 @@ inspecting exactly why the engine decided what it decided.
 
 ---
 
+## Screenshots
+
+**Qualified call — all seven items captured, handoff gate open**
+![Qualified handoff](docs/screenshots/01-qualified-handoff.png)
+The transcript, the checklist with every captured value, the outcome panel explaining the
+decision, and the raw backend state. The backend is the source of truth; the UI only renders it.
+
+**Immediate disqualification — agricultural property**
+![Disqualification](docs/screenshots/02-disqualification.png)
+Qualification stops on checklist item 1. Items 2-7 are never asked, and the outcome panel
+names the rule that fired.
+
+**Above-cap amount still pending — handoff blocked**
+![Cap offer pending](docs/screenshots/03-cap-offer-pending.png)
+A ₹90 lakh request is not a rejection: the ₹75 lakh cap is offered. Until the customer
+answers, the gate stays blocked and the reason is shown.
+
+**Transfer routing — existing loan on the property**
+![Transfer routing](docs/screenshots/04-transfer-routing.png)
+Routed to a loan-transfer specialist rather than rejected, and the checklist is abandoned.
+
+**Out-of-order multi-fact capture**
+![Out of order](docs/screenshots/05-out-of-order-capture.png)
+Three facts arrive in one sentence. None of them is asked again; the agent moves to the
+earliest item still missing.
+
+**Call history and callback requests**
+![Call history](docs/screenshots/06-call-history.png)
+Every test call with its outcome. Callbacks are labelled "request only" — there is no
+scheduling integration, and the UI says so.
+
+**System prompt rendered with live dynamic variables**
+![Prompt variables](docs/screenshots/07-prompt-variables.png)
+All eleven assignment variables resolved. A test asserts none is left unsubstituted.
+
+**Knowledge grounding — the agent defers instead of inventing**
+![Knowledge grounding](docs/screenshots/08-knowledge-grounding.png)
+Asked for an interest rate, the agent defers to the senior loan expert. No rate exists
+anywhere in the knowledge base, so one cannot be fabricated.
+
+---
+
 ## 1. Running it
 
 ```bash
@@ -270,3 +312,4 @@ through Retell's dashboard, so that code has still never hit a live endpoint.
 | `docs/test-results.md` | Measured results, real transcripts, and what was *not* verified |
 | `docs/implementation-notes.md` | Key decisions and the bugs that shaped the code |
 | `docs/voice-platform-status.md` | What is integrated, what is not, how to finish it |
+| `docs/demo-script.md` | A click-by-click script for recording a walkthrough video |
