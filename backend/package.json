@@ -1,0 +1,29 @@
+{
+  "name": "project-1-conversational-ai-workbench",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Home Credit LAP voice agent — conversational AI workbench (Project 1)",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "vitest run --reporter=verbose",
+    "test:watch": "vitest",
+    "lint": "node --check src/server.js && node scripts/syntax-check.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.9"
+  },
+  "optionalDependencies": {
+    "retell-sdk": "^6.2.5"
+  }
+}

@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LAP Agent Workbench</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="topbar">
+  <div class="topbar__brand">
+    <span class="logo" aria-hidden="true">◈</span>
+    <div>
+      <h1>LAP Agent Workbench</h1>
+      <p class="topbar__sub">Loan Against Property &middot; preliminary qualification</p>
+    </div>
+  </div>
+  <div class="topbar__status">
+    <span class="pill" id="provider-pill" title="Voice provider status">
+      <span class="pill__dot" aria-hidden="true"></span>
+      <span id="provider-label">checking…</span>
+    </span>
+    <span class="pill pill--muted" id="llm-pill" title="Understanding layer">
+      <span id="llm-label">—</span>
+    </span>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Workbench sections">
+  <button role="tab" id="tab-workspace" aria-controls="panel-workspace" aria-selected="true" class="tab is-active">Workspace</button>
+  <button role="tab" id="tab-history" aria-controls="panel-history" aria-selected="false" class="tab">Call history</button>
+  <button role="tab" id="tab-prompt" aria-controls="panel-prompt" aria-selected="false" class="tab">Agent prompt</button>
+  <button role="tab" id="tab-knowledge" aria-controls="panel-knowledge" aria-selected="false" class="tab">Knowledge &amp; rules</button>
+</nav>
+
+<main id="main">
+
+  <!-- ============ WORKSPACE ============ -->
+  <section id="panel-workspace" role="tabpanel" aria-labelledby="tab-workspace" class="panel is-active">
+    <div class="layout">
+
+      <!-- Left: configuration + scenarios -->
+      <aside class="col col--setup">
+        <section class="card">
+          <h2>Call configuration</h2>
+          <form id="config-form" novalidate>
+            <div class="field">
+              <label for="customer_name">Customer name</label>
+              <input id="customer_name" name="customer_name" type="text" value="Rahul Sharma"
+                     required maxlength="80" autocomplete="off" aria-describedby="customer_name-error" />
+              <p class="field__error" id="customer_name-error" hidden>Customer name is required.</p>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="agent_name">Agent name</label>
+                <input id="agent_name" name="agent_name" type="text" value="Aarav" maxlength="40" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label for="agent_gender">Agent gender</label>
+                <select id="agent_gender" name="agent_gender">
+                  <option value="male" selected>male</option>
+                  <option value="female">female</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="language_to_speak">Language</label>
+                <select id="language_to_speak" name="language_to_speak">
+                  <option value="English" selected>English</option>
+                  <option value="Hindi">Hindi</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="company_name">Company</label>
+                <input id="company_name" name="company_name" type="text" value="Home Credit" maxlength="60" autocomplete="off" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="rag">Additional context (RAG)
+                <span class="hint">appended to the product knowledge base</span>
+              </label>
+              <textarea id="rag" name="additional_context_from_rag" rows="2"
+                        placeholder="Optional operator notes injected as additional_context_from_rag"></textarea>
+            </div>
+            <div class="actions">
+              <button type="submit" class="btn btn--primary" id="btn-start">Start call</button>
+              <button type="button" class="btn" id="btn-reset" disabled>End &amp; reset</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="card">
+          <h2>Test scenarios</h2>
+          <p class="card__hint">Scripted customer utterances. Runs against the same engine as a live call.</p>
+          <div id="scenario-list" class="scenario-list" aria-busy="true">
+            <p class="empty">Loading scenarios…</p>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Middle: conversation -->
+      <section class="col col--convo card">
+        <div class="convo__head">
+          <h2>Conversation</h2>
+          <span class="status-chip" id="status-chip" data-status="idle">no active call</span>
+        </div>
+
+        <div id="transcript" class="transcript" role="log" aria-live="polite" aria-label="Call transcript">
+          <div class="empty-state">
+            <p class="empty-state__title">No active call</p>
+            <p>Configure the call on the left and press <strong>Start call</strong>, or run a scripted scenario.</p>
+          </div>
+        </div>
+
+        <form id="turn-form" class="turn-form">
+          <label class="sr-only" for="utterance">Customer utterance</label>
+          <input id="utterance" type="text" placeholder="Type what the customer says…"
+                 autocomplete="off" maxlength="1000" disabled />
+          <button type="submit" class="btn btn--primary" id="btn-send" disabled>Send</button>
+        </form>
+        <p class="turn-form__note" id="turn-note" hidden></p>
+      </section>
+
+      <!-- Right: qualification state -->
+      <aside class="col col--state">
+        <section class="card">
+          <h2>Qualification checklist</h2>
+          <ol id="checklist" class="checklist">
+            <li class="empty">Start a call to begin.</li>
+          </ol>
+        </section>
+
+        <section class="card">
+          <h2>Outcome</h2>
+          <dl id="outcome" class="outcome">
+            <div><dt>Status</dt><dd id="out-status">—</dd></div>
+            <div><dt>Handoff gate</dt><dd id="out-gate">—</dd></div>
+            <div><dt>Loan amount</dt><dd id="out-amount">—</dd></div>
+            <div><dt>Termination</dt><dd id="out-reason">—</dd></div>
+          </dl>
+          <p class="decision" id="decision-explain" hidden></p>
+        </section>
+
+        <section class="card">
+          <h2>State inspector</h2>
+          <p class="card__hint">Backend is the source of truth for qualification.</p>
+          <details>
+            <summary>Raw conversation state</summary>
+            <pre id="state-json" class="json">—</pre>
+          </details>
+          <details>
+            <summary>Answer history (corrections)</summary>
+            <pre id="history-json" class="json">—</pre>
+          </details>
+          <details>
+            <summary>Prompt variables sent to platform</summary>
+            <pre id="vars-json" class="json">—</pre>
+          </details>
+        </section>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ HISTORY ============ -->
+  <section id="panel-history" role="tabpanel" aria-labelledby="tab-history" class="panel" hidden>
+    <div class="card">
+      <div class="convo__head">
+        <h2>Call history</h2>
+        <button type="button" class="btn btn--small" id="btn-refresh-history">Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <caption class="sr-only">Previous test calls and their outcomes</caption>
+          <thead>
+            <tr><th scope="col">Customer</th><th scope="col">Language</th><th scope="col">Status</th>
+                <th scope="col">Reason</th><th scope="col">Turns</th><th scope="col">Started</th><th scope="col"></th></tr>
+          </thead>
+          <tbody id="history-body">
+            <tr><td colspan="7" class="empty">No calls yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Callback requests</h2>
+      <p class="card__hint">Recorded preferences only — this project has no scheduling integration, so nothing here is booked.</p>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th scope="col">Customer</th><th scope="col">Requested time</th><th scope="col">Scheduled</th></tr></thead>
+          <tbody id="callback-body"><tr><td colspan="3" class="empty">None.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROMPT ============ -->
+  <section id="panel-prompt" role="tabpanel" aria-labelledby="tab-prompt" class="panel" hidden>
+    <div class="card">
+      <div class="convo__head">
+        <h2>System prompt preview</h2>
+        <div class="actions actions--inline">
+          <label class="sr-only" for="prompt-language">Preview language</label>
+          <select id="prompt-language">
+            <option value="English" selected>English</option>
+            <option value="Hindi">Hindi</option>
+          </select>
+          <button type="button" class="btn btn--small" id="btn-copy-prompt">Copy rendered</button>
+        </div>
+      </div>
+      <p class="card__hint">Rendered with the dynamic variables the voice platform would inject.</p>
+      <div id="prompt-vars" class="var-grid"></div>
+      <pre id="prompt-text" class="prompt-pre">Loading…</pre>
+    </div>
+  </section>
+
+  <!-- ============ KNOWLEDGE ============ -->
+  <section id="panel-knowledge" role="tabpanel" aria-labelledby="tab-knowledge" class="panel" hidden>
+    <div class="layout layout--two">
+      <div class="card">
+        <h2>Eligibility rules</h2>
+        <p class="card__hint">Served by the backend so the UI never holds a second copy.</p>
+        <div id="rules-view" class="rules-view">Loading…</div>
+      </div>
+      <div class="card">
+        <h2>Knowledge retrieval</h2>
+        <p class="card__hint">Check what the agent can and cannot answer from grounded knowledge.</p>
+        <form id="kb-form" class="kb-form">
+          <label class="sr-only" for="kb-question">Question</label>
+          <input id="kb-question" type="text" placeholder="e.g. What is the maximum amount?" maxlength="200" />
+          <button type="submit" class="btn btn--primary btn--small">Query</button>
+        </form>
+        <div id="kb-result" class="kb-result" hidden></div>
+        <h3 class="subhead">Knowledge base</h3>
+        <ul id="kb-list" class="kb-list"><li class="empty">Loading…</li></ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script src="app.js" type="module"></script>
+</body>
+</html>

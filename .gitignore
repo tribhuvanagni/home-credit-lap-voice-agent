@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# real environment files — only .env.example is committed
+.env
+.env.*
+!.env.example
+
+# SQLite databases and sidecars
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# logs, coverage, build output
+*.log
+coverage/
+dist/
+.vite/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
